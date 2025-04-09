@@ -7,7 +7,7 @@ import shutil
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set the time duration here
-time_duration = 10  # Change this value to your desired duration
+time_duration = 60  # Change this value to your desired duration
 
 # Parameters for folder naming
 material = "PLA"  # Replace with actual material name
@@ -20,7 +20,7 @@ amplitude_step = 0.1  # Step for amplitude
 
 # Manual amplitude option
 use_manual_amplitude = True  # Set to True to use manual amplitude
-manual_amplitude = 0.15  # Manual amplitude value
+manual_amplitude = 0.50  # Manual amplitude value
 
 # Folder to store CSV files
 csv_folder_base = f"csv_files_{material}_infill{wypelnienie}_%_amp"
@@ -28,14 +28,19 @@ csv_folder_base = f"csv_files_{material}_infill{wypelnienie}_%_amp"
 # ---------------------------------------------------- Parametry sweepu ----------------------------------------------------
 start_freq = 10  # 1. Początkowa częstotliwość (np.:5 Hz)
 end_freq = 100  # 2. Końcowa częstotliwość (np.: 200 Hz)
-freq_duration = 1  # 3. Czas trwania każdej częstotliwości w sekundach
-smooth_transition = True  # 4. Ustaw na True aby uzyskać płynne przejście
+
+freq_duration = 10  # 3. Czas trwania każdej częstotliwości w sekundach
+
+smooth_transition = False  # 4. Ustaw na True aby uzyskać płynne przejście
+
 pause_duration = 1  # 5. Czas pauzy pomiędzy częstotliwościami (jeśli smooth_transition=False)
 freq_step = 10  # 7. Krok zmiany częstotliwości (np. 1 ,3 ,15 etc.)
-total_duration = 10  # 8. Całkowity czas trwania sweepu (sekundy) dla płynnej zmiany czestotliwości: smooth_transition=True
+total_duration = time_duration  # 8. Całkowity czas trwania sweepu (sekundy) dla płynnej zmiany czestotliwości: smooth_transition=True
+
+
 gradual_amplitude_increase = False  # 9. Włącz stopniowe zwiększanie amplitudy (próba eliminacji szumu)
 amplitude_rise_time = 0.5  # 10. Czas narostu amplitudy w sekundach
-sample_rate = 96000  # 13. Częstotliwość próbkowania (Hz)
+sample_rate = 44100  # 13. Częstotliwość próbkowania (Hz)
 
 def validate_parameters():
     """Validate the sweep parameters."""

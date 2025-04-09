@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-import sounddevice as sd
+import pyaudio
 import time
 import csv
 from datetime import datetime, timedelta
@@ -32,34 +32,41 @@ def sweep_with_amplitude_and_duration(start_freq, end_freq, freq_duration, sampl
     sample_counter = 0
     step_size = int(sample_rate * 0.005)  # co 5 ms
 
+    p = pyaudio.PyAudio()
+    stream = p.open(format=pyaudio.paInt16, channels=1, rate=sample_rate, output=True, frames_per_buffer=1024 * 4)
+
     if smooth_transition:
         t = np.linspace(0, total_duration, int(sample_rate * total_duration), endpoint=False)
         freq_sweep = np.linspace(start_freq, end_freq, len(t))
 
         sweep_signal, _ = generate_signal(freq_sweep, total_duration, amplitude, sample_rate)
+        sweep_signal = (sweep_signal * 32767).astype(np.int16)
 
-        sd.play(sweep_signal, samplerate=sample_rate)
-        sd.wait()
+        stream.write(sweep_signal.tobytes())
 
         for i in range(0, len(sweep_signal), step_size):
             current_time = start_datetime + timedelta(seconds=i / sample_rate)
             timestamp_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-            all_samples.append((i + 1, timestamp_str, round(sweep_signal[i], 5), round(freq_sweep[i], 2)))
+            all_samples.append((i + 1, timestamp_str, round(sweep_signal[i] / 32767, 5), round(freq_sweep[i], 2)))
 
     else:
         for freq in freqs:
             signal, t = generate_signal(freq, freq_duration, amplitude, sample_rate)
+            signal = (signal * 32767).astype(np.int16)
 
-            sd.play(signal, samplerate=sample_rate)
-            sd.wait()
+            stream.write(signal.tobytes())
 
             for i in range(0, len(signal), step_size):
                 current_time = start_datetime + timedelta(seconds=sample_counter / sample_rate)
                 timestamp_str = current_time.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                all_samples.append((sample_counter + 1, timestamp_str, round(signal[i], 5), round(freq, 2)))
+                all_samples.append((sample_counter + 1, timestamp_str, round(signal[i] / 32767, 5), round(freq, 2)))
                 sample_counter += step_size
 
             time.sleep(pause_duration)
+
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
